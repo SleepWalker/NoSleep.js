@@ -6,8 +6,8 @@
 (function(root) {
   // UA matching
   var ua = {
-    Android: /Android/ig.test(navigator.userAgent),
-    iOS: /AppleWebKit/.test(navigator.userAgent) && /Mobile\/\w+/.test(navigator.userAgent)
+    Android: /Android/ig.test(navigator.userAgent) && !/IEMobile/ig.test(navigator.userAgent),
+    iOS: /AppleWebKit/.test(navigator.userAgent) && /Mobile\/\w+/.test(navigator.userAgent) && !/IEMobile/ig.test(navigator.userAgent)
   };
 
   var media = {
