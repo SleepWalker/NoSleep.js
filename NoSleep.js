@@ -6,8 +6,12 @@
 (function(root) {
   // UA matching
   var ua = {
-    Android: /Android/ig.test(navigator.userAgent) && !/IEMobile/ig.test(navigator.userAgent),
-    iOS: /AppleWebKit/.test(navigator.userAgent) && /Mobile\/\w+/.test(navigator.userAgent) && !/IEMobile/ig.test(navigator.userAgent)
+    Android: /Android/i.test(navigator.userAgent),
+    iOS: /AppleWebKit/.test(navigator.userAgent) && /Mobile\/\w+/.test(navigator.userAgent),
+    Other: /CriOS/.test(navigator.userAgent) ||
+           /IEMobile/i.test(navigator.userAgent) ||
+           /BlackBerry/i.test(navigator.userAgent) ||
+           /BB10/i.test(navigator.userAgent)
   };
 
   var media = {
@@ -24,9 +28,9 @@
 
   // NoSleep instance constructor
   var NoSleep = function() {
-    if (ua.iOS) {
+    if (ua.iOS && !ua.Other) {
       this.noSleepTimer = null;
-    } else if (ua.Android) {
+    } else if (ua.Android && !ua.Other) {
       // Set up no sleep video element
       this.noSleepVideo = document.createElement('video');
       this.noSleepVideo.setAttribute("loop", "");
@@ -41,25 +45,25 @@
 
   // Enable NoSleep instance
   NoSleep.prototype.enable = function(duration) {
-    if (ua.iOS) {
+    if (ua.iOS && !ua.Other) {
       this.disable();
       this.noSleepTimer = window.setInterval(function() {
         window.location.href = '/';
         window.setTimeout(window.stop, 0);
       }, duration || 15000);
-    } else if (ua.Android) {
+    } else if (ua.Android && !ua.Other) {
       this.noSleepVideo.play();
     }
   };
 
   // Disable NoSleep instance
   NoSleep.prototype.disable = function() {
-    if (ua.iOS) {
+    if (ua.iOS && !ua.Other) {
       if (this.noSleepTimer) {
         window.clearInterval(this.noSleepTimer);
         this.noSleepTimer = null;
       }
-    } else if (ua.Android) {
+    } else if (ua.Android && !ua.Other) {
       this.noSleepVideo.pause();
     }
   };
