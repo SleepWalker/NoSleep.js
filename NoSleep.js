@@ -28,9 +28,13 @@
 
   // NoSleep instance constructor
   var NoSleep = function() {
-    if (ua.iOS && !ua.Other) {
+    if (ua.Other) {
+      return;
+    }
+
+    if (ua.iOS) {
       this.noSleepTimer = null;
-    } else if (ua.Android && !ua.Other) {
+    } else if (ua.Android) {
       // Set up no sleep video element
       this.noSleepVideo = document.createElement('video');
       this.noSleepVideo.setAttribute("loop", "");
@@ -39,31 +43,37 @@
       addSourceToVideo(this.noSleepVideo, "webm", media.WebM);
       addSourceToVideo(this.noSleepVideo, "mp4", media.MP4);
     }
-
-    return this;
   };
 
   // Enable NoSleep instance
   NoSleep.prototype.enable = function(duration) {
-    if (ua.iOS && !ua.Other) {
+    if (ua.Other) {
+      return this;
+    }
+
+    if (ua.iOS) {
       this.disable();
       this.noSleepTimer = window.setInterval(function() {
         window.location.href = '/';
         window.setTimeout(window.stop, 0);
       }, duration || 15000);
-    } else if (ua.Android && !ua.Other) {
+    } else if (ua.Android) {
       this.noSleepVideo.play();
     }
   };
 
   // Disable NoSleep instance
   NoSleep.prototype.disable = function() {
-    if (ua.iOS && !ua.Other) {
+    if (ua.Other) {
+      return this;
+    }
+
+    if (ua.iOS) {
       if (this.noSleepTimer) {
         window.clearInterval(this.noSleepTimer);
         this.noSleepTimer = null;
       }
-    } else if (ua.Android && !ua.Other) {
+    } else if (ua.Android) {
       this.noSleepVideo.pause();
     }
   };
