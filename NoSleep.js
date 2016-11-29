@@ -8,77 +8,60 @@
 
     // UA matching
     var noSleep = {
-        video: /Android/i.test(navigator.userAgent),
-        location: /iPhone|iP[oa]d/.test(navigator.userAgent),
-        noSupport: /CriOS|IEMobile|BlackBerry|BB10/i.test(navigator.userAgent)
+        video: /Android|iPad|iPhone OS 1[0-9]/.test(navigator.userAgent), // androids, iPads, iPhone OS 10+
+        location: /iPhone|iP[ao]d/.test(navigator.userAgent) && !/CriOS/.test(navigator.userAgent)
     };
 
-    var media = {
-        webm: 'data:video/webm;base64,GkXfo0AgQoaBAUL3gQFC8oEEQvOBCEKCQAR3ZWJtQoeBAkKFgQIYU4BnQI0VSalmQCgq17FAAw9CQE2AQAZ3aGFtbXlXQUAGd2hhbW15RIlACECPQAAAAAAAFlSua0AxrkAu14EBY8WBAZyBACK1nEADdW5khkAFVl9WUDglhohAA1ZQOIOBAeBABrCBCLqBCB9DtnVAIueBAKNAHIEAAIAwAQCdASoIAAgAAUAmJaQAA3AA/vz0AAA=',
-        mp4: 'data:video/mp4;base64,AAAAHGZ0eXBpc29tAAACAGlzb21pc28ybXA0MQAAAAhmcmVlAAAAG21kYXQAAAGzABAHAAABthADAowdbb9/AAAC6W1vb3YAAABsbXZoZAAAAAB8JbCAfCWwgAAAA+gAAAAAAAEAAAEAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAIVdHJhawAAAFx0a2hkAAAAD3wlsIB8JbCAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAQAAAAAAIAAAACAAAAAABsW1kaWEAAAAgbWRoZAAAAAB8JbCAfCWwgAAAA+gAAAAAVcQAAAAAAC1oZGxyAAAAAAAAAAB2aWRlAAAAAAAAAAAAAAAAVmlkZW9IYW5kbGVyAAAAAVxtaW5mAAAAFHZtaGQAAAABAAAAAAAAAAAAAAAkZGluZgAAABxkcmVmAAAAAAAAAAEAAAAMdXJsIAAAAAEAAAEcc3RibAAAALhzdHNkAAAAAAAAAAEAAACobXA0dgAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAIAAgASAAAAEgAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABj//wAAAFJlc2RzAAAAAANEAAEABDwgEQAAAAADDUAAAAAABS0AAAGwAQAAAbWJEwAAAQAAAAEgAMSNiB9FAEQBFGMAAAGyTGF2YzUyLjg3LjQGAQIAAAAYc3R0cwAAAAAAAAABAAAAAQAAAAAAAAAcc3RzYwAAAAAAAAABAAAAAQAAAAEAAAABAAAAFHN0c3oAAAAAAAAAEwAAAAEAAAAUc3RjbwAAAAAAAAABAAAALAAAAGB1ZHRhAAAAWG1ldGEAAAAAAAAAIWhkbHIAAAAAAAAAAG1kaXJhcHBsAAAAAAAAAAAAAAAAK2lsc3QAAAAjqXRvbwAAABtkYXRhAAAAAQAAAABMYXZmNTIuNzguMw=='
-    };
-
-    function addSourceToVideo(element, type, dataURI) {
-        var source = document.createElement('source');
-        source.src = dataURI;
-        source.type = 'video/' + type;
-        element.appendChild(source);
-    }
+    var mp4 = 'data:video/mp4;base64,AAAAIGZ0eXBpc29tAAACAGlzb21pc28yYXZjMW1wNDEAAAMXbW9vdgAAAGxtdmhkAAAAAAAAAAAAAAAAAAAD6AAAAFQAAQAAAQAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAkF0cmFrAAAAXHRraGQAAAADAAAAAAAAAAAAAAABAAAAAAAAAFQAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAABAAAAAAAQAAAAEAAAAAAAkZWR0cwAAABxlbHN0AAAAAAAAAAEAAABUAAAAAAABAAAAAAG5bWRpYQAAACBtZGhkAAAAAAAAAAAAAAAAAAAwAAAABABVxAAAAAAALWhkbHIAAAAAAAAAAHZpZGUAAAAAAAAAAAAAAABWaWRlb0hhbmRsZXIAAAABZG1pbmYAAAAUdm1oZAAAAAEAAAAAAAAAAAAAACRkaW5mAAAAHGRyZWYAAAAAAAAAAQAAAAx1cmwgAAAAAQAAASRzdGJsAAAApHN0c2QAAAAAAAAAAQAAAJRhdmMxAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAQABABIAAAASAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGP//AAAALmF2Y0MBQsAK/+EAFmdCwArZH558BEAAAAMAQAAADAPEiZIBAAVoy4FyyAAAABBwYXNwAAAAAQAAAAEAAAAYc3R0cwAAAAAAAAABAAAAAgAAAgAAAAAUc3RzcwAAAAAAAAABAAAAAQAAABxzdHNjAAAAAAAAAAEAAAABAAAAAgAAAAEAAAAcc3RzegAAAAAAAAAAAAAAAgAAAnMAAAAOAAAAFHN0Y28AAAAAAAAAAQAAA0cAAABidWR0YQAAAFptZXRhAAAAAAAAACFoZGxyAAAAAAAAAABtZGlyYXBwbAAAAAAAAAAAAAAAAC1pbHN0AAAAJal0b28AAAAdZGF0YQAAAAEAAAAATGF2ZjU3LjU3LjEwMAAAAAhmcmVlAAACiW1kYXQAAAJhBgX//13cRem95tlIt5Ys2CDZI+7veDI2NCAtIGNvcmUgMTQ4IC0gSC4yNjQvTVBFRy00IEFWQyBjb2RlYyAtIENvcHlsZWZ0IDIwMDMtMjAxNiAtIGh0dHA6Ly93d3cudmlkZW9sYW4ub3JnL3gyNjQuaHRtbCAtIG9wdGlvbnM6IGNhYmFjPTAgcmVmPTMgZGVibG9jaz0xOjA6MCBhbmFseXNlPTB4MToweDExMSBtZT1oZXggc3VibWU9NyBwc3k9MSBwc3lfcmQ9MS4wMDowLjAwIG1peGVkX3JlZj0xIG1lX3JhbmdlPTE2IGNocm9tYV9tZT0xIHRyZWxsaXM9MSA4eDhkY3Q9MCBjcW09MCBkZWFkem9uZT0yMSwxMSBmYXN0X3Bza2lwPTEgY2hyb21hX3FwX29mZnNldD0tMiB0aHJlYWRzPTEgbG9va2FoZWFkX3RocmVhZHM9MSBzbGljZWRfdGhyZWFkcz0wIG5yPTAgZGVjaW1hdGU9MSBpbnRlcmxhY2VkPTAgYmx1cmF5X2NvbXBhdD0wIGNvbnN0cmFpbmVkX2ludHJhPTAgYmZyYW1lcz0wIHdlaWdodHA9MCBrZXlpbnQ9MzAga2V5aW50X21pbj0zIHNjZW5lY3V0PTQwIGludHJhX3JlZnJlc2g9MCByY19sb29rYWhlYWQ9MzAgcmM9Y3JmIG1idHJlZT0xIGNyZj0yMS4wIHFjb21wPTAuNjAgcXBtaW49MCBxcG1heD02OSBxcHN0ZXA9NCBpcF9yYXRpbz0xLjQwIGFxPTE6MS4wMACAAAAACmWIhBvJigACdhgAAAAKQYiIK8mKAALC+A==';
 
     // NoSleep instance constructor
     var NoSleep = function() {
-        if (noSleep.noSupport) {
-            return;
-        }
+        this.noSleepTimer = null;
 
-        if (noSleep.location) {
-            this.noSleepTimer = null;
-        } else if (noSleep.video) {
+        if (noSleep.video) {
             // Set up no sleep video element
             this.noSleepVideo = document.createElement('video');
             this.noSleepVideo.setAttribute('loop', '');
-
-            // Append nosleep video sources
-            addSourceToVideo(this.noSleepVideo, 'webm', media.webm);
-            addSourceToVideo(this.noSleepVideo, 'mp4', media.mp4);
+            this.noSleepVideo.setAttribute('playsinline', '');
+            this.noSleepVideo.src = mp4;
         }
     };
 
     // Enable NoSleep instance
     NoSleep.prototype.enable = function(duration) {
-        if (noSleep.noSupport) {
-            return this;
-        }
+        this.disable();
 
-        if (noSleep.location) {
-            this.disable();
+        if (noSleep.video) {
+            var playPause = function() {
+                // play-pause, to reduce CPU load
+                this.play();
+                setTimeout(this.pause.bind(this), 100);
+            }.bind(this.noSleepVideo);
+
+            playPause();
+
+            this.noSleepTimer = setInterval(playPause, duration || 10000);
+        } else if (noSleep.location) {
             this.noSleepTimer = setInterval(function() {
                 if (!document.hidden) {
                     window.location.href = window.location.href;
                     setTimeout(window.stop, 0);
                 }
-            }, duration || 15000);
-        } else if (noSleep.video) {
-            this.noSleepVideo.play();
+            }, duration || 30000);
         }
     };
 
     // Disable NoSleep instance
     NoSleep.prototype.disable = function() {
-        if (noSleep.noSupport) {
-            return this;
+        if (this.noSleepTimer) {
+            clearInterval(this.noSleepTimer);
+            this.noSleepTimer = null;
         }
 
-        if (noSleep.location) {
-            if (this.noSleepTimer) {
-                clearInterval(this.noSleepTimer);
-                this.noSleepTimer = null;
-            }
-        } else if (noSleep.video) {
+        if (this.noSleepVideo && !this.noSleepVideo) {
             this.noSleepVideo.pause();
         }
     };
 
-    // Append NoSleep API to root object
     root.NoSleep = NoSleep;
 }(this));
