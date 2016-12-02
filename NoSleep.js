@@ -30,7 +30,9 @@
          */
         this.methods = {
             video: /Android|iPad|iPhone OS 1[0-9]/.test(navigator.userAgent), // androids, iPads, iPhone OS 10+
-            location: /iPhone|iP[ao]d/.test(navigator.userAgent) && !/CriOS/.test(navigator.userAgent)
+            location: /iPhone|iP[ao]d/.test(navigator.userAgent)
+                && !/CriOS/.test(navigator.userAgent)
+                && !/iPhone OS 7/.test(navigator.userAgent) // iPhone 4 does not support any method :(
         };
 
         this.noSleepTimer = null;
@@ -112,11 +114,9 @@
             var changeLocation = function() {
                 this.iddlePromise = this.whenLocationChangeAllowed()
                     .then(function() {
-                        if (!this.isEnabled()) {
+                        if (!this.isEnabled() || document.hidden) {
                             return;
                         }
-
-                        this.noSleepTimer = setTimeout(changeLocation, duration || 30000); // for apple devices 30sec frequency is enough
 
                         return new Promise(function(resolve) {
                             window.location.href = window.location.href;
@@ -132,7 +132,7 @@
                     });
             }.bind(this);
 
-            this.noSleepTimer = setTimeout(changeLocation, duration || 30000);
+            this.noSleepTimer = setInterval(changeLocation, duration || 20000);
         }
     };
 
@@ -143,7 +143,7 @@
         this._enabled = false;
 
         if (this.noSleepTimer) {
-            clearTimeout(this.noSleepTimer);
+            clearInterval(this.noSleepTimer);
             this.noSleepTimer = null;
         }
 
