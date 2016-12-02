@@ -56,6 +56,19 @@
             this.noSleepVideo.setAttribute('playsinline', '');
             this.noSleepVideo.src = mp4;
         }
+
+        document.addEventListener('visibilitychange', function() {
+            if (!this.noSleepVideo) {
+                return;
+            }
+
+            if (document.hidden) {
+                this.noSleepVideo.pause();
+            } else {
+                this.noSleepVideo.load();
+                this.noSleepVideo.play();
+            }
+        }.bind(this));
     }
 
     /**
@@ -99,11 +112,14 @@
             }.bind(this);
 
             play();
-            var initVideo = function() {
-                play();
-                document.removeEventListener('touchstart', initVideo, false);
-            };
-            document.addEventListener('touchstart', initVideo, false);
+
+            if (this.noSleepVideo.paused) {
+                var initVideo = function() {
+                    play();
+                    document.removeEventListener('touchstart', initVideo, false);
+                };
+                document.addEventListener('touchstart', initVideo, false);
+            }
         } else if (this.methods.location) {
             var Promise = this.Promise || function(fn) {
                 fn(function() {});
