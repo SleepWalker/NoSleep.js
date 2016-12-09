@@ -13,6 +13,7 @@
 
     /**
      * @param {object} options
+     * @param {bool} options.disableLocationMethod - do not use location method, even if it is available
      * @param {Promise} options.Promise - Promise constructor
      * @param {function} options.whenLocationChangeAllowed - function, that returns a promise, that fullfilled,
      *                   when we can make the next atempt to call window.stop()
@@ -36,6 +37,10 @@
         };
 
         this.noSleepTimer = null;
+
+        if (options.disableLocationMethod) {
+            this.method.location = false;
+        }
 
         if (this.options.Promise) {
             this.Promise = this.options.Promise;
