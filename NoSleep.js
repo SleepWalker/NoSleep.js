@@ -21,26 +21,7 @@
     function NoSleep(options) {
         this.options = options || {};
 
-        /**
-         * Wake lock methods detection
-         * - video: wake lock by playing tiny video in background
-         * - location: wake lock by performing location change and instantly stopping during navigation (iPhone, iOS < 10)
-         *
-         * The `location` method has a side effect. It may stop currently pending requests (xhr/scripts/images etc).
-         * `NoSleep#whenIddle()` method may be used, to synchronize your code requests with wake lock location change method
-         */
-        this.methods = {
-            video: /Android|iPad|iPhone OS 1[0-9]/.test(navigator.userAgent), // androids, iPads, iPhone OS 10+
-            location: /iPhone|iP[ao]d/.test(navigator.userAgent)
-                && !/CriOS/.test(navigator.userAgent)
-                && !/iPhone OS 7/.test(navigator.userAgent) // iPhone 4 does not support any method :(
-        };
-
         this.noSleepTimer = null;
-
-        if (options.disableLocationMethod) {
-            this.method.location = false;
-        }
 
         if (this.options.Promise) {
             this.Promise = this.options.Promise;
@@ -54,27 +35,53 @@
             }
         }
 
-        if (this.methods.video) {
+        this.detectAvailableMethods(options);
+    }
+
+    /**
+     * Wake lock methods detection
+     * - video: wake lock by playing tiny video in background
+     * - location: wake lock by performing location change and instantly stopping during navigation (iPhone, iOS < 10)
+     *
+     * The `location` method has a side effect. It may stop currently pending requests (xhr/scripts/images etc).
+     * `NoSleep#whenIddle()` method may be used, to synchronize your code requests with wake lock location change method
+     *
+     * @api private
+     *
+     * @param {object} options
+     * @param {bool} options.disableLocationMethod - do not use location method, even if it is available
+     */
+    NoSleep.prototype.detectAvailableMethods = function(options) {
+        options = options || {};
+
+        this.methods = {
+            video: /Android|iPad|iPhone OS 1[0-9]/.test(navigator.userAgent), // androids, iPads, iPhone OS 10+
+            location: /iPhone|iP[ao]d/.test(navigator.userAgent)
+                && !/CriOS/.test(navigator.userAgent)
+                && !/iPhone OS 7/.test(navigator.userAgent) // iPhone 4 does not support any method :(
+        };
+
+        if (this.methods.video && !this.noSleepVideo) {
             // Set up no sleep video element
             this.noSleepVideo = document.createElement('video');
             this.noSleepVideo.setAttribute('loop', '');
             this.noSleepVideo.setAttribute('playsinline', '');
             this.noSleepVideo.src = mp4;
+
+            document.addEventListener('visibilitychange', function() {
+                if (document.hidden) {
+                    this.noSleepVideo.pause();
+                } else {
+                    this.noSleepVideo.load();
+                    this.noSleepVideo.play();
+                }
+            }.bind(this));
         }
 
-        document.addEventListener('visibilitychange', function() {
-            if (!this.noSleepVideo) {
-                return;
-            }
-
-            if (document.hidden) {
-                this.noSleepVideo.pause();
-            } else {
-                this.noSleepVideo.load();
-                this.noSleepVideo.play();
-            }
-        }.bind(this));
-    }
+        if (options.disableLocationMethod) {
+            this.methods.location = false;
+        }
+    };
 
     /**
      * @return {bool} - whether wakeLock is available for current device
@@ -100,10 +107,16 @@
     /**
      * Enable NoSleep instance
      *
-     * @param {number} duration
+     * @param {object} options
+     * @param {number} options.duration - frequesncy of location refresh on iOS9
+     * @param {bool} options.disableLocationMethod - do not use location method, even if it is available
      */
-    NoSleep.prototype.enable = function(duration) {
+    NoSleep.prototype.enable = function(options) {
+        options = options || {};
+
         this.disable();
+
+        this.detectAvailableMethods(options);
 
         this._enabled = this.methods.video || this.methods.location;
 
@@ -153,7 +166,7 @@
                     });
             }.bind(this);
 
-            this.noSleepTimer = setInterval(changeLocation, duration || 20000);
+            this.noSleepTimer = setInterval(changeLocation, options.duration || 20000);
         }
     };
 
@@ -174,6 +187,8 @@
     };
 
     /**
+     * @api private
+     *
      * @return {Promise}
      */
     NoSleep.prototype.whenLocationChangeAllowed = function() {
